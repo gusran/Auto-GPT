@@ -25,10 +25,10 @@ class PromptGenerator:
                 "text": "thought",
                 "reasoning": "reasoning",
                 "plan": "- short bulleted\n- list that conveys\n- long-term plan",
-                "criticism": "constructive self-criticism",
+                "criticism": "constructive self-criticism focusing on progress",
                 "speak": "thoughts summary to say to user",
             },
-            "command": {"name": "command name", "args": {"arg name": "value"}},
+            "command": {"name": "command name to execute", "args": {"arg name": "value"}},
         }
 
     def add_constraint(self, constraint: str) -> None:

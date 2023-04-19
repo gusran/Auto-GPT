@@ -132,8 +132,6 @@ def write_to_file(filename: str, text: str) -> str:
     Returns:
         str: A message indicating success or failure
     """
-    if check_duplicate_operation("write", filename):
-        return "Error: File has already been updated."
     try:
         filepath = path_in_workspace(filename)
         directory = os.path.dirname(filepath)
@@ -179,8 +177,6 @@ def delete_file(filename: str) -> str:
     Returns:
         str: A message indicating success or failure
     """
-    if check_duplicate_operation("delete", filename):
-        return "Error: File has already been deleted."
     try:
         filepath = path_in_workspace(filename)
         os.remove(filepath)

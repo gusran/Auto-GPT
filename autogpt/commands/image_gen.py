@@ -9,20 +9,24 @@ import requests
 from PIL import Image
 from autogpt.config import Config
 from autogpt.workspace import path_in_workspace
+import os
 
 CFG = Config()
 
 
-def generate_image(prompt: str) -> str:
+def generate_image(prompt: str, filename: str) -> str:
     """Generate an image from a prompt.
 
     Args:
         prompt (str): The prompt to use
+        filename (str): The filename
 
     Returns:
         str: The filename of the image
     """
-    filename = f"{str(uuid.uuid4())}.jpg"
+
+    if os.path.exists(filename):
+        return "The file already exists use write_file if you want to overwrite it"
 
     # DALL-E
     if CFG.image_provider == "dalle":

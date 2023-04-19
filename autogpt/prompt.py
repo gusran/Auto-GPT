@@ -36,7 +36,13 @@ def get_prompt() -> str:
     )
     prompt_generator.add_constraint("No user assistance")
     prompt_generator.add_constraint(
-        'Exclusively use the commands listed in double quotes e.g. "command name"'
+        'You always have to specify a command. Exclusively use commands from the list of valid commands listed in '
+        'double quotes e.g. "command name"'
+    )
+
+    prompt_generator.add_constraint(
+        'If you get an error while executing a command from the command list'
+        'assume that the command failed, and verify if possible'
     )
 
     # Define the command list
@@ -64,26 +70,30 @@ def get_prompt() -> str:
             "clone_repository",
             {"repository_url": "<url>", "clone_path": "<directory>"},
         ),
-        ("Write to file", "write_to_file", {"file": "<file>", "text": "<text>"}),
-        ("Read file", "read_file", {"file": "<file>"}),
-        ("Append to file", "append_to_file", {"file": "<file>", "text": "<text>"}),
+        ("Overwrite or create file with text", "write_to_file", {"file": "<file>", "text": "<text>"}),
+        ("Read content from file", "read_file", {"file": "<file>"}),
+        ("Append text to end of file", "append_to_file", {"file": "<file>", "text": "<text>"}),
         ("Delete file", "delete_file", {"file": "<file>"}),
         ("Search Files", "search_files", {"directory": "<directory>"}),
-        ("Evaluate Code", "evaluate_code", {"code": "<full_code_string>"}),
+        ("Show all the files that you have generated", "show_workspace_content", {}),
+        ("Evaluate code and get suggestions and comments", "evaluate_code", {"code": "<full_code_string>"}),
         (
             "Get Improved Code",
             "improve_code",
             {"suggestions": "<list_of_suggestions>", "code": "<full_code_string>"},
         ),
         (
-            "Write Tests",
+            "Get test code for testing code with specified focus "
+            "(if you want to run it you need to write the result to a file first)",
             "write_tests",
             {"code": "<full_code_string>", "focus": "<list_of_focus_areas>"},
         ),
-        ("Execute Python File", "execute_python_file", {"file": "<file>"}),
-        ("Generate Image", "generate_image", {"prompt": "<prompt>"}),
-        ("Send Tweet", "send_tweet", {"text": "<text>"}),
+        ("Execute a python file (a new python file can be created with the command write_to_file)",
+            "execute_python_file", {"file": "<file>"}),
+        ("Generate an image jpg file from prompt", "generate_image", {"prompt": "<prompt>", "file": "<prompt>"})
     ]
+
+    # ("Send Tweet", "send_tweet", {"text": "<text>"}),
 
     # Only add the audio to text command if the model is specified
     if cfg.huggingface_audio_to_text_model:
@@ -125,7 +135,7 @@ def get_prompt() -> str:
     prompt_generator.add_resource(
         "GPT-3.5 powered Agents for delegation of simple tasks."
     )
-    prompt_generator.add_resource("File output.")
+    prompt_generator.add_resource("File input and output.")
 
     # Add performance evaluations to the PromptGenerator object
     prompt_generator.add_performance_evaluation(
@@ -133,14 +143,20 @@ def get_prompt() -> str:
         " the best of your abilities."
     )
     prompt_generator.add_performance_evaluation(
-        "Constructively self-criticize your big-picture behavior constantly."
+        "Constructively self-criticize your big-picture behavior constantly, and make sure you stay "
+        "focused on solving the assignment efficiently."
     )
     prompt_generator.add_performance_evaluation(
-        "Reflect on past decisions and strategies to refine your approach."
+        "Reflect on past decisions and strategies to refine your approach and to stay focused on progress."
     )
     prompt_generator.add_performance_evaluation(
-        "Every command has a cost, so be smart and efficient. Aim to complete tasks in"
-        " the least number of steps."
+        "Every command has a cost, also the command do_nothing. You always have to specify a command, "
+        "so be smart and efficient while keeping it simple. "
+        "Aim to complete the goals using the least number of commands."
+    )
+    prompt_generator.add_performance_evaluation(
+        "Reflect on progress and and try to be productive, remember that results in "
+        "the workspace can only be produced by overwriting or appending to files using the file commands."
     )
 
     # Generate the prompt string

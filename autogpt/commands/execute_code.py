@@ -30,7 +30,7 @@ def execute_python_file(file: str):
 
     if we_are_running_in_a_docker_container():
         result = subprocess.run(
-            f"python {file_path}", capture_output=True, encoding="utf8", shell=True
+            f"python {file_path}", capture_output=True, encoding="utf8", shell=True, timeout=10
         )
         if result.returncode == 0:
             return result.stdout
