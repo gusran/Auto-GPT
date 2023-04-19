@@ -26,23 +26,6 @@ def check_duplicate_operation(operation: str, filename: str) -> bool:
     return log_entry in log_content
 
 
-def log_operation(operation: str, filename: str) -> None:
-    """Log the file operation to the file_logger.txt
-
-    Args:
-        operation (str): The operation to log
-        filename (str): The name of the file the operation was performed on
-    """
-    log_entry = f"{operation}: {filename}\n"
-
-    # Create the log file if it doesn't exist
-    if not os.path.exists(LOG_FILE_PATH):
-        with open(LOG_FILE_PATH, "w", encoding="utf-8") as f:
-            f.write("File Operation Logger ")
-
-    append_to_file(LOG_FILE, log_entry, shouldLog = False)
-
-
 def split_file(
     content: str, max_length: int = 4000, overlap: int = 0
 ) -> Generator[str, None, None]:
@@ -122,7 +105,7 @@ def ingest_file(
         print(f"Error while ingesting file '{filename}': {str(e)}")
 
 
-def write_to_file(filename: str, text: str) -> str:
+def write_to_file(filename: str, text: str, create: bool) -> str:
     """Write text to a file
 
     Args:
@@ -132,6 +115,12 @@ def write_to_file(filename: str, text: str) -> str:
     Returns:
         str: A message indicating success or failure
     """
+    if os.path.exists(path_in_workspace(filename)) and os.path.isdir(filename):
+        return "Error: Command had no effect. A directory already exists with the same name, " \
+               "you need to choose a different name."
+    if os.path.exists(path_in_workspace(filename)) and create:
+        return f"Error: Command had no effect, {filename} has already been created. Replace {filename} if your " \
+               f"intention is to overwrite the content or append if your intention is to add text to the file."
     try:
         filepath = path_in_workspace(filename)
         directory = os.path.dirname(filepath)
@@ -139,13 +128,12 @@ def write_to_file(filename: str, text: str) -> str:
             os.makedirs(directory)
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(text)
-        log_operation("write", filename)
-        return "File written to successfully."
+        return "File written to successfully!"
     except Exception as e:
         return f"Error: {str(e)}"
 
 
-def append_to_file(filename: str, text: str, shouldLog: bool = True) -> str:
+def append_to_file(filename: str, text: str) -> str:
     """Append text to a file
 
     Args:
@@ -160,10 +148,7 @@ def append_to_file(filename: str, text: str, shouldLog: bool = True) -> str:
         with open(filepath, "a") as f:
             f.write(text)
 
-        if shouldLog:
-            log_operation("append", filename)
-
-        return "Text appended successfully."
+        return "Text appended successfully!"
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -180,8 +165,7 @@ def delete_file(filename: str) -> str:
     try:
         filepath = path_in_workspace(filename)
         os.remove(filepath)
-        log_operation("delete", filename)
-        return "File deleted successfully."
+        return "File deleted successfully!"
     except Exception as e:
         return f"Error: {str(e)}"
 

@@ -8,7 +8,6 @@ from autogpt.commands.improve_code import improve_code
 from autogpt.commands.write_tests import write_tests
 from autogpt.config import Config
 from autogpt.commands.image_gen import generate_image
-from autogpt.commands.show_workspace_content import show_workspace_content
 from autogpt.commands.audio_text import read_audio_from_file
 from autogpt.commands.web_requests import scrape_links, scrape_text
 from autogpt.commands.execute_code import execute_python_file, execute_shell
@@ -96,8 +95,9 @@ def map_command_synonyms(command_name: str):
     string matches a list of common/known hallucinations
     """
     synonyms = [
-        ("write_file", "write_to_file"),
-        ("create_file", "write_to_file"),
+        ("write_to_file", "create_file"),
+        ("write_file", "create_file"),
+        ("over_write_file", "replace_file"),
         ("search", "google"),
     ]
     for seen_command, actual_command_name in synonyms:
@@ -159,16 +159,16 @@ def execute_command(command_name: str, arguments):
             )
         elif command_name == "read_file":
             return read_file(arguments["file"])
-        elif command_name == "write_to_file":
-            return write_to_file(arguments["file"], arguments["text"])
+        elif command_name == "create_file":
+            return write_to_file(arguments["file"], arguments["text"], True)
+        elif command_name == "replace_file":
+            return write_to_file(arguments["file"], arguments["text"], False)
         elif command_name == "append_to_file":
             return append_to_file(arguments["file"], arguments["text"])
         elif command_name == "delete_file":
             return delete_file(arguments["file"])
         elif command_name == "search_files":
             return search_files(arguments["directory"])
-        elif command_name == "show_workspace_content":
-            return show_workspace_content()
         elif command_name == "browse_website":
             return browse_website(arguments["url"], arguments["question"])
         # TODO: Change these to take in a file rather than pasted code, if
@@ -198,7 +198,7 @@ def execute_command(command_name: str, arguments):
         elif command_name == "send_tweet":
             return send_tweet(arguments["text"])
         elif command_name == "do_nothing":
-            return "No action performed."
+            return "No action performed and no results produced such as files."
         elif command_name == "task_complete":
             shutdown()
         else:
