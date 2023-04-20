@@ -6,6 +6,7 @@ import os.path
 from pathlib import Path
 from typing import Generator
 from autogpt.workspace import path_in_workspace, WORKSPACE_PATH
+import util
 
 LOG_FILE = "file_logger.txt"
 LOG_FILE_PATH = WORKSPACE_PATH / LOG_FILE
@@ -27,7 +28,7 @@ def check_duplicate_operation(operation: str, filename: str) -> bool:
 
 
 def split_file(
-    content: str, max_length: int = 4000, overlap: int = 0
+        content: str, max_length: int = 4000, overlap: int = 0
 ) -> Generator[str, None, None]:
     """
     Split text into chunks of a specified maximum length with a specified overlap
@@ -46,7 +47,7 @@ def split_file(
     while start < content_length:
         end = start + max_length
         if end + overlap < content_length:
-            chunk = content[start : end + overlap]
+            chunk = content[start: end + overlap]
         else:
             chunk = content[start:content_length]
         yield chunk
@@ -72,7 +73,7 @@ def read_file(filename: str) -> str:
 
 
 def ingest_file(
-    filename: str, memory, max_length: int = 4000, overlap: int = 200
+        filename: str, memory, max_length: int = 4000, overlap: int = 200
 ) -> None:
     """
     Ingest a file by reading its content, splitting it into chunks with a specified
@@ -133,6 +134,28 @@ def write_to_file(filename: str, text: str, create: bool) -> str:
         return f"Error: {str(e)}"
 
 
+def patch_python_file(filename: str, text: str):
+    if util.is_python_code(text):
+        file_content = util.read_file_with_detected_encoding(filename)
+        if util.is_python_code(file_content):
+            has_collision, common_function_names = util.has_function_name_collision(file_content, text)
+            if has_collision:
+                for function_name in common_function_names:
+                    functions = util.extract_functions_by_name(text, function_name)
+                    if len(functions) > 1:
+                        return "I failed to patch the file. The code I am trying to patch with contains several " \
+                               "definitions with the same function name, when patching there cannot be multiple " \
+                               "definitions of the same function in the patch text!"
+                    elif len(functions) == 1:
+                        util.replace_functions_by_name(file_content, functions[0])
+            else:
+                return f"I failed to patch the file, non of the functions defined in the patch text exist in the file"
+        else:
+            return f"I failed to patch the file with the patch, the file does not seem to contain python code"
+    else:
+        return f"I failed to patch the file with the patch, the patch text does not seem to contain any python code"
+
+
 def append_to_file(filename: str, text: str) -> str:
     """Append text to a file
 
@@ -143,6 +166,17 @@ def append_to_file(filename: str, text: str) -> str:
     Returns:
         str: A message indicating success or failure
     """
+
+    if util.is_python_code(text):
+        file_content = util.read_file_with_detected_encoding(filename)
+        if util.is_python_code(file_content):
+            has_collision, common_function_names = util.has_function_name_collision(file_content, text)
+            if has_collision:
+                return f"The text you are trying to append " \
+                       f"is python code with functions that already exist in the file, " \
+                       f"the following functions are already in the file {', '.join(common_function_names)}! " \
+                       f"You can try patching the functions one by one or replace the file with new content."
+
     try:
         filepath = path_in_workspace(filename)
         with open(filepath, "a") as f:
