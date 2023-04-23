@@ -45,31 +45,32 @@ def get_prompt() -> str:
         'assume that the command failed, and verify if possible'
     )
 
+    disabled = [("Google Search", "google", {"input": "<search>"}),
+    (
+        "Browse Website",
+        "browse_website",
+        {"url": "<url>", "question": "<what_you_want_to_find_on_website>"},
+    ),
+    (
+        "Start GPT Agent",
+        "start_agent",
+        {"name": "<name>", "task": "<short_task_desc>", "prompt": "<prompt>"},
+    ),
+    (
+        "Message GPT Agent",
+        "message_agent",
+        {"key": "<key>", "message": "<message>"},
+    ),
+    ("List GPT Agents", "list_agents", {}),
+    ("Delete GPT Agent", "delete_agent", {"key": "<key>"}),
+    (
+        "Clone Repository",
+        "clone_repository",
+        {"repository_url": "<url>", "clone_path": "<directory>"},
+    )]
+
     # Define the command list
     commands = [
-        ("Google Search", "google", {"input": "<search>"}),
-        (
-            "Browse Website",
-            "browse_website",
-            {"url": "<url>", "question": "<what_you_want_to_find_on_website>"},
-        ),
-        (
-            "Start GPT Agent",
-            "start_agent",
-            {"name": "<name>", "task": "<short_task_desc>", "prompt": "<prompt>"},
-        ),
-        (
-            "Message GPT Agent",
-            "message_agent",
-            {"key": "<key>", "message": "<message>"},
-        ),
-        ("List GPT Agents", "list_agents", {}),
-        ("Delete GPT Agent", "delete_agent", {"key": "<key>"}),
-        (
-            "Clone Repository",
-            "clone_repository",
-            {"repository_url": "<url>", "clone_path": "<directory>"},
-        ),
         ("Create file", "create_file", {"file": "<file>", "text": "<text>"}),
         ("Replace file", "replace_file", {"file": "<file>", "text": "<text>"}),
         ("Read text from file", "read_file", {"file": "<file>"}),
@@ -79,6 +80,12 @@ def get_prompt() -> str:
             "Recursively list all files starting with <directory>, use . as <directory> to list all files ",
             "search_files",
             {"directory": "<directory>"}),
+        (
+            "Patch a file with python code by replacing function and method definitions in the file"
+            "with the ones given in <python code>",
+            "patch_python_file",
+            {"file": "<file>", "python_code": "<python code>"}
+        ),
         ("Evaluate code and get suggestions and comments", "evaluate_code", {"code": "<full_code_string>"}),
         (
             "Get improved code to consider as replacement code",

@@ -1,39 +1,44 @@
 import re
 
 import chardet
+import ast
+
+
+def replace_function(function_name, function_nodes, new_function_node):
+    for index, node in enumerate(function_nodes):
+        if node.name == function_name:
+            function_nodes[index] = new_function_node
+            break
+    return function_nodes
 
 
 def replace_functions_by_name(code_str, new_function_str):
-    # Extract the function name from the new function definition
-    function_name = re.match(r'^\s*def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(', new_function_str, re.MULTILINE).group(1)
+    tree = ast.parse(code_str)
+    new_function_nodes = ast.parse(new_function_str).body
+    new_function_names = [node.name for node in new_function_nodes if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))]
 
-    # Regular expression pattern to match function definitions with the same name
-    function_pattern = re.compile(
-        r'^\s*def\s+{0}\s*\(.*?\)\s*:\s*(?:(?:[^{1}]*{1})?[^{1}]*?)*'.format(
-            re.escape(function_name),
-            re.escape("def")
-        ),
-        re.MULTILINE | re.DOTALL
-    )
+    for new_function_name, new_function_node in zip(new_function_names, new_function_nodes):
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef):
+                for i, body_node in enumerate(node.body):
+                    if isinstance(body_node, (ast.FunctionDef, ast.AsyncFunctionDef)) and body_node.name == new_function_name:
+                        node.body[i] = new_function_node
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == new_function_name:
+                tree.body = replace_function(new_function_name, tree.body, new_function_node)
 
-    # Replace the matching functions with the new function definition
-    patched_code_str = function_pattern.sub(new_function_str, code_str)
-
-    return patched_code_str
+    return ast.unparse(tree)
 
 
 def extract_functions_by_name(code_str, function_name):
-    # Regular expression pattern to match function definitions and their content
-    function_pattern = re.compile(
-        r'^\s*def\s+{0}\s*\(.*?\)\s*:\s*(?:(?:[^{1}]*{1})?[^{1}]*?)*'.format(
-            re.escape(function_name),
-            re.escape("def")
-        ),
-        re.MULTILINE | re.DOTALL
-    )
+    tree = ast.parse(code_str)
+    functions = []
 
-    # Extract matching functions
-    functions = function_pattern.findall(code_str)
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            if node.name == function_name:
+                source_lines = code_str.splitlines()
+                function_def = source_lines[node.lineno - 1:node.end_lineno]
+                functions.append('\n'.join(function_def))
 
     return functions
 
