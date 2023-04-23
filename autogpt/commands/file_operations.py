@@ -6,7 +6,7 @@ import os.path
 from pathlib import Path
 from typing import Generator
 from autogpt.workspace import path_in_workspace, WORKSPACE_PATH
-import util
+from autogpt.commands import util
 
 LOG_FILE = "file_logger.txt"
 LOG_FILE_PATH = WORKSPACE_PATH / LOG_FILE
@@ -136,24 +136,29 @@ def write_to_file(filename: str, text: str, create: bool) -> str:
 
 def patch_python_file(filename: str, text: str):
     if util.is_python_code(text):
-        file_content = util.read_file_with_detected_encoding(filename)
+        file_content = util.read_file_with_detected_encoding(path_in_workspace(filename))
         if util.is_python_code(file_content):
             has_collision, common_function_names = util.has_function_name_collision(file_content, text)
             if has_collision:
                 for function_name in common_function_names:
+                    functions_in_file = util.extract_functions_by_name(file_content, function_name)
                     functions = util.extract_functions_by_name(text, function_name)
+
+                    if len(functions_in_file) > 1:
+                        return f"There are multiple definitions of {function_name} in the file" \
+                               f", and I was not able to determine which one to patch"
+
                     if len(functions) > 1:
                         return "I failed to patch the file. The code I am trying to patch with contains several " \
-                               "definitions with the same function name, when patching there cannot be multiple " \
-                               "definitions of the same function in the patch text!"
-                    elif len(functions) == 1:
-                        util.replace_functions_by_name(file_content, functions[0])
+                               f"definitions of {function_name}, when patching there cannot be multiple " \
+                               "definitions of the same function in the code I am patching with!"
+                util.replace_functions_by_name(file_content, text)
             else:
-                return f"I failed to patch the file, non of the functions defined in the patch text exist in the file"
+                return f"I failed to patch the file, non of the functions defined in the patch code exist in the file"
         else:
             return f"I failed to patch the file with the patch, the file does not seem to contain python code"
     else:
-        return f"I failed to patch the file with the patch, the patch text does not seem to contain any python code"
+        return f"I failed to patch the file with the patch, the patch code does not seem to contain any python code"
 
 
 def append_to_file(filename: str, text: str) -> str:
@@ -168,14 +173,15 @@ def append_to_file(filename: str, text: str) -> str:
     """
 
     if util.is_python_code(text):
-        file_content = util.read_file_with_detected_encoding(filename)
+        file_content = util.read_file_with_detected_encoding(path_in_workspace(filename))
         if util.is_python_code(file_content):
             has_collision, common_function_names = util.has_function_name_collision(file_content, text)
             if has_collision:
                 return f"The text you are trying to append " \
                        f"is python code with functions that already exist in the file, " \
                        f"the following functions are already in the file {', '.join(common_function_names)}! " \
-                       f"You can try patching the functions one by one or replace the file with new content."
+                       f"You can try patching the functions one by one using the patch_python_file command " \
+                       f"or replace the file with new content."
 
     try:
         filepath = path_in_workspace(filename)

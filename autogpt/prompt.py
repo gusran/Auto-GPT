@@ -84,7 +84,7 @@ def get_prompt() -> str:
             "Patch a file with python code by replacing function and method definitions in the file"
             "with the ones given in <python code>",
             "patch_python_file",
-            {"file": "<file>", "python_code": "<python code>"}
+            {"file": "<file>", "code": "<python code>"}
         ),
         ("Evaluate code and get suggestions and comments", "evaluate_code", {"code": "<full_code_string>"}),
         (

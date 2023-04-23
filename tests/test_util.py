@@ -3,6 +3,7 @@ from autogpt.commands import util
 
 import textwrap
 
+
 def reformat_and_strip(code_str, indent_level=0):
     # Dedent the code string
     dedented_code = textwrap.dedent(code_str)
@@ -17,7 +18,6 @@ def reformat_and_strip(code_str, indent_level=0):
     stripped_code = '\n'.join(stripped_lines)
 
     return stripped_code.strip()
-
 
 
 class TestUtils(unittest.TestCase):
@@ -189,8 +189,7 @@ def foo(self, x, y):
 
         self.assertEqual(len(extracted_functions), 1)
         for extracted_function in extracted_functions:
-            self.assertEqual(reformat_and_strip(new_function_str,4), reformat_and_strip(extracted_function, 4))
-
+            self.assertEqual(reformat_and_strip(new_function_str, 4), reformat_and_strip(extracted_function, 4))
 
 
 if __name__ == '__main__':

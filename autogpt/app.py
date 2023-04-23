@@ -163,7 +163,7 @@ def execute_command(command_name: str, arguments):
         elif command_name == "create_file":
             return write_to_file(arguments["file"], arguments["text"], True)
         elif command_name == "patch_python_file":
-            return patch_python_file(arguments["file"], arguments["python_code"], True)
+            return patch_python_file(arguments["file"], arguments["code"])
         elif command_name == "replace_file":
             return write_to_file(arguments["file"], arguments["text"], False)
         elif command_name == "append_to_file":

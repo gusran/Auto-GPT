@@ -152,7 +152,7 @@ class Agent:
                     f"Command {command_name} threw the following error: {arguments}"
                 )
             elif command_name == "human_feedback":
-                result = f"Human feedback: {self.user_input}"
+                result = f"Command was not executed, feedback: {self.user_input}"
             else:
                 result = (
                     f"Command {command_name} returned: "
