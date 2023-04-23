@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import json
 from typing import Any
+from autogpt.commands import util
+from autogpt.commands import file_operations
 
 
 class PromptGenerator:
@@ -126,6 +128,7 @@ class PromptGenerator:
         """
         formatted_response_format = json.dumps(self.response_format, indent=4)
         return (
+            f"Current workspace state: \n {util.get_workspace_state(file_operations.WORKSPACE_PATH)} \n\n"
             f"Constraints:\n{self._generate_numbered_list(self.constraints)}\n\n"
             "Commands:\n"
             f"{self._generate_numbered_list(self.commands, item_type='command')}\n\n"

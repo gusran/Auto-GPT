@@ -21,6 +21,11 @@ def reformat_and_strip(code_str, indent_level=0):
 
 
 class TestUtils(unittest.TestCase):
+    def test_has_python_code(self):
+        code_str = """import connect_four\n\ndef start_new_game():\n    game = connect_four.ConnectFour()\n    game.print_board()\n    while True:\n        move = None\n        valid_move = False\n        while not valid_move:\n            try:\n                move = int(input(f"{game.current_player}: Enter column number (0-6): "))\n                if not game.is_valid_move(move):\n                    raise Exception(f"Move {move} is invalid.")\n                valid_move = True\n            except ValueError:\n                print("Move must be a number")\n            except Exception as e:\n                print(str(e))\n\n        game.make_move(move)\n        game.print_board()\n        winner = game.check_winner()\n        if winner:\n            print(f"{winner} wins!")\n            break\n        elif game.is_full():\n            print("Draw!")\n            break\n        game.switch_player()"""
+
+        self.assertTrue(util.is_python_code(code_str))
+
     def test_has_function_name_collision(self):
         code_str1 = """
         def foo():

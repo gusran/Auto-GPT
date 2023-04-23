@@ -129,12 +129,16 @@ def write_to_file(filename: str, text: str, create: bool) -> str:
             os.makedirs(directory)
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(text)
-        return "File written to successfully!"
+        return "File created successfully!" if create else "File replaced successfully1"
     except Exception as e:
         return f"Error: {str(e)}"
 
 
 def patch_python_file(filename: str, text: str):
+    valid, message = util.validate_python_code(text)
+    if not valid:
+        return f"The patch code has syntax errors {message}"
+
     if util.is_python_code(text):
         file_content = util.read_file_with_detected_encoding(path_in_workspace(filename))
         if util.is_python_code(file_content):
@@ -153,12 +157,13 @@ def patch_python_file(filename: str, text: str):
                                f"definitions of {function_name}, when patching there cannot be multiple " \
                                "definitions of the same function in the code I am patching with!"
                 util.replace_functions_by_name(file_content, text)
+                return f"The functions {list(common_function_names).join(' ,')} was successfully patched!"
             else:
                 return f"I failed to patch the file, non of the functions defined in the patch code exist in the file"
         else:
-            return f"I failed to patch the file with the patch, the file does not seem to contain python code"
+            return f"I failed to patch the file with the patch, the file does not seem to contain functions to patch"
     else:
-        return f"I failed to patch the file with the patch, the patch code does not seem to contain any python code"
+        return f"I failed to patch the file with the patch, the patch code does not seem to contain any functions"
 
 
 def append_to_file(filename: str, text: str) -> str:

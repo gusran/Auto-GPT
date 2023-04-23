@@ -46,35 +46,35 @@ def get_prompt() -> str:
     )
 
     disabled = [("Google Search", "google", {"input": "<search>"}),
-    (
-        "Browse Website",
-        "browse_website",
-        {"url": "<url>", "question": "<what_you_want_to_find_on_website>"},
-    ),
-    (
-        "Start GPT Agent",
-        "start_agent",
-        {"name": "<name>", "task": "<short_task_desc>", "prompt": "<prompt>"},
-    ),
-    (
-        "Message GPT Agent",
-        "message_agent",
-        {"key": "<key>", "message": "<message>"},
-    ),
-    ("List GPT Agents", "list_agents", {}),
-    ("Delete GPT Agent", "delete_agent", {"key": "<key>"}),
-    (
-        "Clone Repository",
-        "clone_repository",
-        {"repository_url": "<url>", "clone_path": "<directory>"},
-    )]
+                (
+                    "Browse Website",
+                    "browse_website",
+                    {"url": "<url>", "question": "<what_you_want_to_find_on_website>"},
+                ),
+                (
+                    "Start GPT Agent",
+                    "start_agent",
+                    {"name": "<name>", "task": "<short_task_desc>", "prompt": "<prompt>"},
+                ),
+                (
+                    "Message GPT Agent",
+                    "message_agent",
+                    {"key": "<key>", "message": "<message>"},
+                ),
+                ("List GPT Agents", "list_agents", {}),
+                ("Delete GPT Agent", "delete_agent", {"key": "<key>"}),
+                (
+                    "Clone Repository",
+                    "clone_repository",
+                    {"repository_url": "<url>", "clone_path": "<directory>"},
+                )]
 
     # Define the command list
     commands = [
-        ("Create file", "create_file", {"file": "<file>", "text": "<text>"}),
-        ("Replace file", "replace_file", {"file": "<file>", "text": "<text>"}),
+        ("Create file with new content", "create_file", {"file": "<file>", "text": "<text>"}),
+        ("Replace file with new content", "replace_file", {"file": "<file>", "text": "<text>"}),
         ("Read text from file", "read_file", {"file": "<file>"}),
-        ("Append to file", "append_to_file", {"file": "<file>", "text": "<text>"}),
+        ("Append text to end of file", "append_to_file", {"file": "<file>", "text": "<text>"}),
         ("Delete file", "delete_file", {"file": "<file>"}),
         (
             "Recursively list all files starting with <directory>, use . as <directory> to list all files ",
@@ -82,7 +82,7 @@ def get_prompt() -> str:
             {"directory": "<directory>"}),
         (
             "Patch a file with python code by replacing function and method definitions in the file"
-            "with the ones given in <python code>",
+            "with the functions given in <python code>",
             "patch_python_file",
             {"file": "<file>", "code": "<python code>"}
         ),
@@ -99,7 +99,7 @@ def get_prompt() -> str:
             {"code": "<full_code_string>", "focus": "<list_of_focus_areas>"},
         ),
         ("Execute a python file (a new python file can be created with the command write_to_file)",
-            "execute_python_file", {"file": "<file>"}),
+         "execute_python_file", {"file": "<file>"}),
         ("Generate an image jpg file from prompt", "generate_image", {"prompt": "<prompt>", "file": "<prompt>"})
     ]
 
@@ -138,13 +138,13 @@ def get_prompt() -> str:
         prompt_generator.add_command(command_label, command_name, args)
 
     # Add resources to the PromptGenerator object
-    prompt_generator.add_resource(
-        "Internet access for searches and information gathering."
-    )
+    # prompt_generator.add_resource(
+    #    "Internet access for searches and information gathering."
+    # )
     prompt_generator.add_resource("Long Term memory management.")
-    prompt_generator.add_resource(
-        "GPT-3.5 powered Agents for delegation of simple tasks."
-    )
+    # prompt_generator.add_resource(
+    #    "GPT-3.5 powered Agents for delegation of simple tasks."
+    # )
     prompt_generator.add_resource("File input and output.")
 
     # Add performance evaluations to the PromptGenerator object
@@ -161,12 +161,15 @@ def get_prompt() -> str:
     )
     prompt_generator.add_performance_evaluation(
         "Every command has a cost, also the command do_nothing. You always have to specify a command, "
-        "so be smart and efficient while keeping it simple. "
-        "Aim to complete the goals using the least number of commands."
+        "so be smart and effective while keeping it simple. "
+        "Aim to complete the goals using the least number of steps."
     )
     prompt_generator.add_performance_evaluation(
         "Reflect on progress and and try to be productive, remember that results in "
-        "the workspace can only be produced by overwriting or appending to files using the file commands."
+        "the workspace can only be produced by using the file commands."
+    )
+    prompt_generator.add_performance_evaluation(
+        "Remember to keep the workspace tidy and remove unnecessary"
     )
 
     # Generate the prompt string
