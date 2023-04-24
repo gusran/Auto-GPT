@@ -1,7 +1,11 @@
+import io
+import sys
 import unittest
 from autogpt.commands import util
 
 import textwrap
+from io import StringIO
+from contextlib import redirect_stdout
 
 
 def reformat_and_strip(code_str, indent_level=0):
@@ -195,6 +199,192 @@ def foo(self, x, y):
         self.assertEqual(len(extracted_functions), 1)
         for extracted_function in extracted_functions:
             self.assertEqual(reformat_and_strip(new_function_str, 4), reformat_and_strip(extracted_function, 4))
+
+    def test_merge_python_code(self):
+        python_file = """
+import os
+
+def func1():
+    print("func1 from python_file")
+
+class MyClass:
+    def __init__(self):
+        print("MyClass from python_file")
+
+    def method1(self):
+        print("method1 from python_file")
+
+    def method2(self, a, b):
+        print("method2 from python_file", a, b)
+"""
+
+        patch_file = """
+import sys
+
+def func1():
+    print("func1 from patch_file")
+
+class AnotherClass:
+    def __init__(self):
+        print("AnotherClass from patch_file")
+
+    def method2(self, x, y):
+        print("method2 from patch_file", x, y)
+
+    def method3(self):
+        print("method3 from patch_file")
+
+def main():
+    MyClass()
+    AnotherClass()
+"""
+
+        expected_output = """import sys
+import os
+
+def func1():
+    print('func1 from patch_file')
+
+class MyClass:
+
+    def __init__(self):
+        print('MyClass from python_file')
+
+    def method1(self):
+        print('method1 from python_file')
+
+    def method2(self, a, b):
+        print('method2 from python_file', a, b)
+
+class AnotherClass:
+
+    def __init__(self):
+        print('AnotherClass from patch_file')
+
+    def method2(self, x, y):
+        print('method2 from patch_file', x, y)
+
+    def method3(self):
+        print('method3 from patch_file')
+
+def main():
+    MyClass()
+    AnotherClass()"""
+
+        merged_code = util.merge_python_code(python_file, patch_file)
+        self.assertEqual(expected_output, merged_code)
+
+        # Check that the merged code is valid Python code
+        is_valid, error_message = util.validate_python_code(merged_code)
+        self.assertTrue(is_valid)
+        self.assertIsNone(error_message)
+
+        # Check that the merged code produces the expected output when executed
+        namespace = {}
+        exec(merged_code, namespace)
+        if 'main' in namespace:
+            sys.stdout = io.StringIO()
+            namespace['main']()
+            output = sys.stdout.getvalue()
+        expected_stdout = "MyClass from python_file\nAnotherClass from patch_file\n"
+        self.assertEqual(output, expected_stdout)
+
+
+    def test_merge_python_code_2(self):
+        python_file = """
+import os
+
+def func1():
+    print("func1 from python_file")
+
+class MyClass:
+    def __init__(self):
+        print("MyClass from python_file")
+
+    def method1(self):
+        print("method1 from python_file")
+
+    def method2(self, a, b):
+        print("method2 from python_file", a, b)
+
+class AnotherClass:
+    def __init__(self):
+        print("AnotherClass from python_file")
+
+def main():
+    AnotherClass()
+"""
+
+        patch_file = """
+import sys
+
+def func1():
+    print("func1 from patch_file")
+
+class AnotherClass:
+    def __init__(self):
+        print("AnotherClass from patch_file")
+
+    def method2(self, x, y):
+        print("method2 from patch_file", x, y)
+
+    def method3(self):
+        print("method3 from patch_file")
+
+def main():
+    MyClass()
+    AnotherClass()
+"""
+
+        expected_output = """import sys
+import os
+
+def func1():
+    print('func1 from patch_file')
+
+class MyClass:
+
+    def __init__(self):
+        print('MyClass from python_file')
+
+    def method1(self):
+        print('method1 from python_file')
+
+    def method2(self, a, b):
+        print('method2 from python_file', a, b)
+
+class AnotherClass:
+
+    def __init__(self):
+        print('AnotherClass from patch_file')
+
+    def method2(self, x, y):
+        print('method2 from patch_file', x, y)
+
+    def method3(self):
+        print('method3 from patch_file')
+
+def main():
+    MyClass()
+    AnotherClass()"""
+
+        merged_code = util.merge_python_code(python_file, patch_file)
+        self.assertEqual(expected_output, merged_code)
+
+        # Check that the merged code is valid Python code
+        is_valid, error_message = util.validate_python_code(merged_code)
+        self.assertTrue(is_valid)
+        self.assertIsNone(error_message)
+
+        # Check that the merged code produces the expected output when executed
+        namespace = {}
+        exec(merged_code, namespace)
+        if 'main' in namespace:
+            sys.stdout = io.StringIO()
+            namespace['main']()
+            output = sys.stdout.getvalue()
+        expected_stdout = "MyClass from python_file\nAnotherClass from patch_file\n"
+        self.assertEqual(output, expected_stdout)
 
 
 if __name__ == '__main__':

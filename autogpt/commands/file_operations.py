@@ -137,33 +137,19 @@ def write_to_file(filename: str, text: str, create: bool) -> str:
 def patch_python_file(filename: str, text: str):
     valid, message = util.validate_python_code(text)
     if not valid:
-        return f"The patch code has syntax errors {message}"
+        return f"The patch code has syntax errors {message}, no changes made to {filename}"
 
-    if util.is_python_code(text):
-        file_content = util.read_file_with_detected_encoding(path_in_workspace(filename))
-        if util.is_python_code(file_content):
-            has_collision, common_function_names = util.has_function_name_collision(file_content, text)
-            if has_collision:
-                for function_name in common_function_names:
-                    functions_in_file = util.extract_functions_by_name(file_content, function_name)
-                    functions = util.extract_functions_by_name(text, function_name)
+    file_content = util.read_file_with_detected_encoding(path_in_workspace(filename))
+    valid, message = util.validate_python_code(file_content)
+    if not valid:
+        return f"The code in existing {filename} has syntax errors {message}, no changes made to {filename}"
 
-                    if len(functions_in_file) > 1:
-                        return f"There are multiple definitions of {function_name} in the file" \
-                               f", and I was not able to determine which one to patch"
+    merged_content = util.merge_python_code(file_content, text)
 
-                    if len(functions) > 1:
-                        return "I failed to patch the file. The code I am trying to patch with contains several " \
-                               f"definitions of {function_name}, when patching there cannot be multiple " \
-                               "definitions of the same function in the code I am patching with!"
-                util.replace_functions_by_name(file_content, text)
-                return f"The functions {list(common_function_names).join(' ,')} was successfully patched!"
-            else:
-                return f"I failed to patch the file, non of the functions defined in the patch code exist in the file"
-        else:
-            return f"I failed to patch the file with the patch, the file does not seem to contain functions to patch"
-    else:
-        return f"I failed to patch the file with the patch, the patch code does not seem to contain any functions"
+    with open(path_in_workspace(filename), 'w') as file:
+        file.write(merged_content)
+
+    return f"The file {filename} was successfully patched using the provided code!"
 
 
 def append_to_file(filename: str, text: str) -> str:

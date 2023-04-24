@@ -81,8 +81,8 @@ def get_prompt() -> str:
             "search_files",
             {"directory": "<directory>"}),
         (
-            "Patch a file with python code by replacing function and method definitions in the file"
-            "with the functions given in <python code>",
+            "Patch a file with python code using the provided <python code>,"
+            " existing code in the file is preserved when possible but the provided code has precedence",
             "patch_python_file",
             {"file": "<file>", "code": "<python code>"}
         ),
