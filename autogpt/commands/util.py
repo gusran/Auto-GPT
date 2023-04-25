@@ -146,14 +146,24 @@ def merge_python_code(base_code_str, patch_code_str):
     # Remove any duplicate imports in patch module
     new_imports = [imp for imp in patch_module.body if isinstance(imp, ast.Import)]
     for imp in new_imports:
-        if imp not in base_module.body:
+        if not any(isinstance(node, ast.Import) and node.names[0].name == imp.names[0].name for node in base_module.body):
             base_module.body.insert(0, imp)
+
+    if len([n for n in patch_module.body if isinstance(n, (ast.Import,
+                                                           ast.FunctionDef,
+                                                           ast.AsyncFunctionDef,
+                                                           ast.ClassDef))]) > 0:
+        base_module.body = [n for n in base_module.body if isinstance(n, (ast.Import,
+                                                                          ast.FunctionDef,
+                                                                          ast.AsyncFunctionDef,
+                                                                          ast.ClassDef))]
 
     # Handle each class and function definition in the patch module
     for node in patch_module.body:
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             # Check if the function already exists in the base module
-            existing_functions = [f for f in base_module.body if isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef)) and f.name == node.name]
+            existing_functions = [f for f in base_module.body if
+                                  isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef)) and f.name == node.name]
             if existing_functions:
                 # Function with same name exists in base module, replace it with the one in patch module
                 for idx, f in enumerate(base_module.body):
@@ -171,29 +181,40 @@ def merge_python_code(base_code_str, patch_code_str):
                 # Class with same name exists in base module, merge its contents with the one in patch module
                 for idx, c in enumerate(base_module.body):
                     if isinstance(c, ast.ClassDef) and c.name == node.name:
+                        # Replace all code outside of methods with the code in the patch class
+                        new_class_body = []
                         for member_node in node.body:
-                            if isinstance(member_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                                existing_methods = [m for m in c.body if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef)) and m.name == member_node.name]
+                            if isinstance(member_node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Import)):
+                                existing_methods = [m for m in c.body if isinstance(m, (
+                                    ast.FunctionDef, ast.AsyncFunctionDef)) and m.name == member_node.name]
                                 if existing_methods:
                                     # Method with same name exists in the base class, replace it with the one in patch class
                                     for i, m in enumerate(c.body):
-                                        if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef)) and m.name == member_node.name:
+                                        if isinstance(m, (
+                                                ast.FunctionDef, ast.AsyncFunctionDef)) and m.name == member_node.name:
                                             c.body[i] = member_node
                                             break
                                 else:
                                     # Method with this name does not exist, add it to the base class
                                     c.body.append(member_node)
+                            else:
+                                new_class_body.append(member_node)
+                        # Replace all code outside of methods with the code in the patch class
+                        for i, member_node in enumerate(c.body):
+                            if isinstance(member_node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Import)):
+                                c.body[i:i] = new_class_body
+                                break
                         break
             else:
                 # Class with this name does not exist, add it to the base module
                 base_module.body.append(node)
+        elif isinstance(node, ast.Import):
+            # Class with this name does not exist, add it to the base module
+            pass
+        else:
+            # Class with this name does not exist, add it to the base module
+            base_module.body.append(node)
 
-    # Generate the new code string for the merged module
+                # Generate the new code string for the merged module
     new_code_str = ast.unparse(base_module)
-
     return new_code_str
-
-
-
-
-

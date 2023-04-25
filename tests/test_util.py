@@ -208,6 +208,9 @@ def func1():
     print("func1 from python_file")
 
 class MyClass:
+
+    a = 6
+
     def __init__(self):
         print("MyClass from python_file")
 
@@ -221,10 +224,14 @@ class MyClass:
         patch_file = """
 import sys
 
+ABCD = 5
+
 def func1():
     print("func1 from patch_file")
 
 class AnotherClass:
+    b = 7    
+
     def __init__(self):
         print("AnotherClass from patch_file")
 
@@ -246,6 +253,7 @@ def func1():
     print('func1 from patch_file')
 
 class MyClass:
+    a = 6
 
     def __init__(self):
         print('MyClass from python_file')
@@ -255,8 +263,10 @@ class MyClass:
 
     def method2(self, a, b):
         print('method2 from python_file', a, b)
+ABCD = 5
 
 class AnotherClass:
+    b = 7
 
     def __init__(self):
         print('AnotherClass from patch_file')
@@ -289,10 +299,10 @@ def main():
         expected_stdout = "MyClass from python_file\nAnotherClass from patch_file\n"
         self.assertEqual(output, expected_stdout)
 
-
     def test_merge_python_code_2(self):
         python_file = """
 import os
+import numpy
 
 def func1():
     print("func1 from python_file")
@@ -317,6 +327,7 @@ def main():
 
         patch_file = """
 import sys
+import numpy
 
 def func1():
     print("func1 from patch_file")
@@ -338,6 +349,7 @@ def main():
 
         expected_output = """import sys
 import os
+import numpy
 
 def func1():
     print('func1 from patch_file')
