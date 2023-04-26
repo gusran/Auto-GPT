@@ -127,9 +127,9 @@ class PromptGenerator:
             str: The generated prompt string.
         """
         formatted_response_format = json.dumps(self.response_format, indent=4)
-        print(f"Current workspace state:\n{file_operations.show_workspace_state()}\n\n")
+        print(f"Files in the workspace:\n{file_operations.show_workspace_state()}\n\n")
         return (
-            f"Workspace:\n{file_operations.show_workspace_state()}\n\n"
+            f"Existing files in the workspace:\n{file_operations.show_workspace_state()}\n\n"
             f"Constraints:\n{self._generate_numbered_list(self.constraints)}\n\n"
             "Commands:\n"
             f"{self._generate_numbered_list(self.commands, item_type='command')}\n\n"

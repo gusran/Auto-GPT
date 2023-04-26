@@ -136,8 +136,8 @@ def write_to_file(filename: str, text: str, create: bool) -> str:
         return "Error: Command had no effect. A directory already exists with the same name, " \
                "you need to choose a different name."
     if os.path.exists(path_in_workspace(filename)) and create:
-        return f"Error: Command had no effect, {filename} has already been created. Replace {filename} if your " \
-               f"intention is to overwrite the content or append if your intention is to add text to the file."
+        return f"Error: Command had no effect, {filename} has already been created. Replace or patch {filename} if your " \
+               f"intention is to overwrite or patch the content or append if your intention is to add text to the file."
     try:
         filepath = path_in_workspace(filename)
         directory = os.path.dirname(filepath)
@@ -157,12 +157,14 @@ def patch_python_file(filename: str, text: str):
 
     valid, message = util.validate_python_code(text)
     if not valid:
-        return f"The patch code has syntax errors {message}, no changes made to {filename}"
+        return f"Error: The patch code has syntax errors {message}, you need to fix the errors and try again, " \
+               f"no changes made to {filename}"
 
     file_content = util.read_file_with_detected_encoding(path_in_workspace(filename))
     valid, message = util.validate_python_code(file_content)
     if not valid:
-        return f"The code in existing {filename} has syntax errors {message}, no changes made to {filename}"
+        return f"Error: The code in existing {filename} has syntax errors {message}, consider replacing the content, " \
+               f"no changes made to {filename}"
 
     merged_content = util.merge_python_code(file_content, text)
 
@@ -201,7 +203,7 @@ def append_to_file(filename: str, text: str) -> str:
 
         return "Text appended successfully!"
     except Exception as e:
-        return f"Error: {str(e)}"
+        return f"Error: The update failed: {str(e)}"
 
 
 def delete_file(filename: str) -> str:
@@ -218,7 +220,7 @@ def delete_file(filename: str) -> str:
         os.remove(filepath)
         return "File deleted successfully!"
     except Exception as e:
-        return f"Error: {str(e)}"
+        return f"Error: The delete failed: {str(e)}"
 
 
 def search_files(directory: str) -> list[str]:

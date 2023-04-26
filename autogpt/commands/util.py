@@ -90,6 +90,16 @@ def has_function_name_collision(code_str1, code_str2):
         return False, set()
 
 
+def get_implemented_flag(func_node):
+    filtered_body = [stmt for stmt in func_node.body if "TODO" not in ast.dump(stmt)]
+    if len(filtered_body) == 1 and isinstance(filtered_body[0], ast.Pass):
+        return ""
+    elif len(filtered_body) == 0:
+        return ""
+    else:
+        return "(implemented)"
+
+
 def get_workspace_state(dir_path):
     result = []
     for root, dirs, files in os.walk(dir_path):
@@ -117,11 +127,13 @@ def get_workspace_state(dir_path):
                             for method_node in class_node.body:
                                 if isinstance(method_node, ast.FunctionDef):
                                     method_name = method_node.name
-                                    result.append(f"{indent}        Method: {class_name}.{method_name}(...)")
+                                    result.append(f"{indent}        Method: {class_name}.{method_name}(...) "
+                                                  f"{get_implemented_flag(method_node)}")
 
                         for function_node in functions:
                             function_name = function_node.name
-                            result.append(f"{indent}    Function: {function_name}(...)")
+                            result.append(f"{indent}    Function: {function_name}(...) "
+                                          f"{get_implemented_flag(function_node)}")
                     except SyntaxError:
                         result.append(f"{indent}    Has syntax errors...")
 
@@ -148,7 +160,8 @@ def merge_python_code(base_code_str, patch_code_str):
     # Remove any duplicate imports in patch module
     new_imports = [imp for imp in patch_module.body if isinstance(imp, ast.Import)]
     for imp in new_imports:
-        if not any(isinstance(node, ast.Import) and node.names[0].name == imp.names[0].name for node in base_module.body):
+        if not any(
+                isinstance(node, ast.Import) and node.names[0].name == imp.names[0].name for node in base_module.body):
             base_module.body.insert(0, imp)
 
     if len([n for n in patch_module.body if isinstance(n, (ast.Import,
@@ -217,6 +230,6 @@ def merge_python_code(base_code_str, patch_code_str):
             # Class with this name does not exist, add it to the base module
             base_module.body.append(node)
 
-                # Generate the new code string for the merged module
+            # Generate the new code string for the merged module
     new_code_str = ast.unparse(base_module)
     return new_code_str
