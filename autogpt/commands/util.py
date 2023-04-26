@@ -95,7 +95,10 @@ def get_workspace_state(dir_path):
     for root, dirs, files in os.walk(dir_path):
         level = root.replace(str(dir_path), '').count(os.sep)
         indent = ' ' * 4 * level
-        result.append(f"{indent}Folder: {os.path.basename(root)}")
+        if level == 0:
+            result.append(f"Current workspace content:")
+        else:
+            result.append(f"{indent}Folder: {os.path.basename(root)}")
 
         for f in files:
             if f.endswith('.txt'):
@@ -105,23 +108,22 @@ def get_workspace_state(dir_path):
                 with open(os.path.join(root, f), 'r', encoding='utf-8') as file:
                     try:
                         module = ast.parse(file.read())
+                        classes = [node for node in module.body if isinstance(node, ast.ClassDef)]
+                        functions = [node for node in module.body if isinstance(node, ast.FunctionDef)]
+
+                        for class_node in classes:
+                            class_name = class_node.name
+                            result.append(f"{indent}    Class: {class_name}")
+                            for method_node in class_node.body:
+                                if isinstance(method_node, ast.FunctionDef):
+                                    method_name = method_node.name
+                                    result.append(f"{indent}        Method: {class_name}.{method_name}(...)")
+
+                        for function_node in functions:
+                            function_name = function_node.name
+                            result.append(f"{indent}    Function: {function_name}(...)")
                     except SyntaxError:
-                        continue
-
-                    classes = [node for node in module.body if isinstance(node, ast.ClassDef)]
-                    functions = [node for node in module.body if isinstance(node, ast.FunctionDef)]
-
-                    for class_node in classes:
-                        class_name = class_node.name
-                        result.append(f"{indent}    Class: {class_name}")
-                        for method_node in class_node.body:
-                            if isinstance(method_node, ast.FunctionDef):
-                                method_name = method_node.name
-                                result.append(f"{indent}        Method: {class_name}.{method_name}(...)")
-
-                    for function_node in functions:
-                        function_name = function_node.name
-                        result.append(f"{indent}    Function: {function_name}(...)")
+                        result.append(f"{indent}    Has syntax errors...")
 
     return '\n'.join(result)
 

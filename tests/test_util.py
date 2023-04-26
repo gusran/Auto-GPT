@@ -1,11 +1,9 @@
 import io
 import sys
-import unittest
-from autogpt.commands import util
-
 import textwrap
-from io import StringIO
-from contextlib import redirect_stdout
+import unittest
+
+from autogpt.commands import util
 
 
 def reformat_and_strip(code_str, indent_level=0):

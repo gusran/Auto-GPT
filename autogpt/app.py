@@ -17,7 +17,7 @@ from autogpt.commands.file_operations import (
     read_file,
     search_files,
     write_to_file,
-    patch_python_file
+    patch_python_file, show_workspace_state
 )
 from autogpt.json_fixes.parsing import fix_and_parse_json
 from autogpt.memory import get_memory
@@ -162,6 +162,8 @@ def execute_command(command_name: str, arguments):
             return read_file(arguments["file"])
         elif command_name == "create_file":
             return write_to_file(arguments["file"], arguments["text"], True)
+        elif command_name == "show_workspace_state":
+            return show_workspace_state()
         elif command_name == "patch_python_file":
             return patch_python_file(arguments["file"], arguments["code"])
         elif command_name == "replace_file":

@@ -36,8 +36,8 @@ def get_prompt() -> str:
     )
     prompt_generator.add_constraint("No user assistance")
     prompt_generator.add_constraint(
-        'You always have to specify a command. Exclusively use commands from the list of valid commands listed in '
-        'double quotes e.g. "command name"'
+        'You always have to specify a command. Only use commands from the list of valid commands listed in '
+        'double quotes e.g. "command name", else you get errors.'
     )
 
     prompt_generator.add_constraint(
@@ -80,6 +80,11 @@ def get_prompt() -> str:
             "Recursively list all files starting with <directory>, use . as <directory> to list all files ",
             "search_files",
             {"directory": "<directory>"}),
+        (
+            "Show workspace state, for python files the signatures of implemented classes and functions are shown",
+            "show_workspace_state",
+            {}
+        ),
         (
             "Patch a file with python code using the provided <python code>,"
             " existing code in the file is preserved when possible but the provided code has precedence",
@@ -149,6 +154,10 @@ def get_prompt() -> str:
 
     # Add performance evaluations to the PromptGenerator object
     prompt_generator.add_performance_evaluation(
+        "When specifying commands to be performed, make sure to verify the result. "
+        "If you get errors expect that the command has failed"
+    )
+    prompt_generator.add_performance_evaluation(
         "Continuously review and analyze your actions to ensure you are performing to"
         " the best of your abilities."
     )
@@ -160,16 +169,15 @@ def get_prompt() -> str:
         "Reflect on past decisions and strategies to refine your approach and to stay focused on progress."
     )
     prompt_generator.add_performance_evaluation(
-        "Every command has a cost, also the command do_nothing. You always have to specify a command, "
-        "so be smart and effective while keeping it simple. "
+        "Be effective, focus on outcome and keep it simple. "
         "Aim to complete the goals using the least number of steps."
     )
     prompt_generator.add_performance_evaluation(
-        "Reflect on progress and and try to be productive, remember that results in "
-        "the workspace can only be produced by using the file commands."
+        "Reflect on your progress and make sure you are producing results in the workspace."
     )
+
     prompt_generator.add_performance_evaluation(
-        "Remember to keep the workspace tidy and remove unnecessary"
+        "Remember to keep the workspace tidy and delete unnecessary files."
     )
 
     # Generate the prompt string

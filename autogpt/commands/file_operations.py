@@ -72,6 +72,21 @@ def read_file(filename: str) -> str:
         return f"Error: {str(e)}"
 
 
+def show_workspace_state() -> str:
+    """Read a file and return the contents
+
+    Args:
+        filename (str): The name of the file to read
+
+    Returns:
+        str: The contents of the file
+    """
+    try:
+        content = show_workspace_state()
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
 def ingest_file(
         filename: str, memory, max_length: int = 4000, overlap: int = 200
 ) -> None:
@@ -135,6 +150,10 @@ def write_to_file(filename: str, text: str, create: bool) -> str:
 
 
 def patch_python_file(filename: str, text: str):
+    if not os.path.exists(path_in_workspace(filename)):
+        with open(path_in_workspace(filename), 'w') as f:
+            pass
+
     valid, message = util.validate_python_code(text)
     if not valid:
         return f"The patch code has syntax errors {message}, no changes made to {filename}"
