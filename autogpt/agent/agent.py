@@ -7,6 +7,7 @@ from autogpt.json_fixes.bracket_termination import (
     attempt_to_fix_json_by_finding_outermost_brackets,
 )
 from autogpt.logs import logger, print_assistant_thoughts
+from autogpt.prompt import construct_prompt
 from autogpt.speech import say_text
 from autogpt.spinner import Spinner
 from autogpt.utils import clean_input
@@ -31,17 +32,15 @@ class Agent:
         memory,
         full_message_history,
         next_action_count,
-        prompt,
         user_input,
     ):
         self.ai_name = ai_name
         self.memory = memory
         self.full_message_history = full_message_history
         self.next_action_count = next_action_count
-        self.prompt = prompt
         self.user_input = user_input
 
-    def start_interaction_loop(self):
+    def start_interaction_loop(self, config):
         # Interaction Loop
         cfg = Config()
         loop_count = 0
@@ -60,10 +59,12 @@ class Agent:
                 )
                 break
 
+            prompt = construct_prompt(config)
+
             # Send message to AI, get response
             with Spinner("Thinking... "):
                 assistant_reply = chat_with_ai(
-                    self.prompt,
+                    prompt,
                     self.user_input,
                     self.full_message_history,
                     self.memory,

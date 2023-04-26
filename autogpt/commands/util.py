@@ -96,7 +96,7 @@ def get_workspace_state(dir_path):
         level = root.replace(str(dir_path), '').count(os.sep)
         indent = ' ' * 4 * level
         if level == 0:
-            result.append(f"Current workspace content:")
+            pass
         else:
             result.append(f"{indent}Folder: {os.path.basename(root)}")
 

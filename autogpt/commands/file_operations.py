@@ -82,7 +82,8 @@ def show_workspace_state() -> str:
         str: The contents of the file
     """
     try:
-        content = show_workspace_state()
+        content = util.get_workspace_state(WORKSPACE_PATH)
+        return content
     except Exception as e:
         return f"Error: {str(e)}"
 
